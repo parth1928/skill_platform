@@ -7,21 +7,34 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 async function updateProfile(req: NextRequest) {
   try {
+    console.log('Profile update request received');
     await dbConnect();
 
     // Get token from header
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
+    const authToken = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!authToken) {
+      console.error('No authorization token found in headers');
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - No token in headers' },
         { status: 401 }
       );
     }
 
     // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    let decoded;
+    try {
+      decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string };
+      console.log('Token verified for user:', decoded.userId);
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return NextResponse.json(
+        { error: 'Unauthorized - Invalid token' },
+        { status: 401 }
+      );
+    }
     
     const body = await req.json();
+    console.log('Update data received:', body);
     const {
       name,
       location,
@@ -33,19 +46,27 @@ async function updateProfile(req: NextRequest) {
     } = body;
 
     // Update user with all fields, allowing empty values
+    const updateData = {
+      name,
+      location,
+      skillsOffered,
+      skillsWanted,
+      availability,
+      visibility,
+      profilePic,
+    };
+    console.log('Attempting to update user with data:', updateData);
+    
     const user = await User.findByIdAndUpdate(
       decoded.userId,
-      {
-        name,
-        location,
-        skillsOffered,
-        skillsWanted,
-        availability,
-        visibility,
-        profilePic,
-      },
-      { new: true }
+      updateData,
+      { 
+        new: true,
+        runValidators: true // This ensures mongoose validates the update
+      }
     );
+    
+    console.log('Updated user in database:', user);
 
     if (!user) {
       return NextResponse.json(
@@ -54,21 +75,33 @@ async function updateProfile(req: NextRequest) {
       );
     }
 
-    // Return updated user data
-    return NextResponse.json({
+    // Return updated user data with token to maintain session
+    const response = {
       user: {
-        id: user._id,
+        _id: user._id.toString(), // Convert ObjectId to string
         name: user.name,
         email: user.email,
-        profilePic: user.profilePic,
-        location: user.location,
-        skillsOffered: user.skillsOffered,
-        skillsWanted: user.skillsWanted,
-        availability: user.availability,
-        visibility: user.visibility,
-        rating: user.rating,
+        token: authToken, // Use the verified token
+        profilePic: user.profilePic || "/placeholder.svg",
+        location: user.location || "",
+        skillsOffered: user.skillsOffered || [],
+        skillsWanted: user.skillsWanted || [],
+        availability: user.availability || "Evenings",
+        visibility: user.visibility || "Private",
+        rating: user.rating || 0,
+        feedback: user.feedback || [],
       },
+    };
+
+    console.log('Sending response:', {
+      ...response,
+      user: {
+        ...response.user,
+        token: response.user.token ? 'exists' : 'missing'
+      }
     });
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Profile update error:', error);
     return NextResponse.json(

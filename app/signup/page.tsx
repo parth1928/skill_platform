@@ -37,16 +37,47 @@ export default function SignUpPage() {
           description: "Password must be at least 8 characters long.",
           variant: "destructive",
         })
+        setIsLoading(false)
         return
       }
 
+      console.log('Starting registration process...')
       const success = await register(email, password, name)
+      
       if (success) {
+        console.log('Registration successful, verifying stored data...')
+        const storedUser = localStorage.getItem("currentUser")
+        if (!storedUser) {
+          console.error('User data not found in storage after registration')
+          toast({
+            title: "Registration error",
+            description: "Failed to save user data. Please try again.",
+            variant: "destructive",
+          })
+          return
+        }
+
+        const userData = JSON.parse(storedUser)
+        if (!userData.token) {
+          console.error('Token missing from stored user data')
+          toast({
+            title: "Registration error",
+            description: "Authentication data missing. Please try logging in.",
+            variant: "destructive",
+          })
+          return
+        }
+
+        console.log('Registration complete, redirecting to profile edit...')
         toast({
           title: "Account created",
           description: "Welcome to SkillSwap Pro! Complete your profile to get started.",
         })
-        router.push("/profile/edit")
+        
+        // Small delay to ensure state is updated before navigation
+        setTimeout(() => {
+          router.push("/profile/edit")
+        }, 100)
       } else {
         toast({
           title: "Registration failed",
@@ -54,6 +85,13 @@ export default function SignUpPage() {
           variant: "destructive",
         })
       }
+    } catch (error) {
+      console.error('Registration error:', error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }

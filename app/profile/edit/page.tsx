@@ -156,7 +156,7 @@ export default function EditProfilePage() {
     setSkillsWanted(skillsWanted.filter((s) => s !== skill))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate required fields
     if (!name.trim()) {
       toast({
@@ -177,8 +177,8 @@ export default function EditProfilePage() {
       return
     }
 
-    // Update profile
-    updateProfile({
+    console.log('Saving profile changes...')
+    const updates = {
       name: name.trim(),
       location: location.trim(),
       availability,
@@ -186,7 +186,20 @@ export default function EditProfilePage() {
       skillsOffered,
       skillsWanted,
       profilePic: profilePic || "/placeholder.svg?height=100&width=100",
-    })
+    }
+    console.log('Update data:', updates)
+
+    // Update profile
+    const success = await updateProfile(updates)
+    
+    if (!success) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
 
     toast({
       title: "Profile updated successfully!",

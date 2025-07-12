@@ -7,10 +7,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(req: Request) {
   try {
+    console.log('Login attempt received');
     await dbConnect();
     
     const body = await req.json();
     const { email, password } = body;
+    console.log('Login attempt for email:', email);
 
     // Find user
     const user = await User.findOne({ email });
@@ -37,20 +39,21 @@ export async function POST(req: Request) {
       { expiresIn: '7d' }
     );
 
-    // Return user data and token
+    // Return user data with token included in the user object
     return NextResponse.json({
-      token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
-        profilePic: user.profilePic,
-        location: user.location,
-        skillsOffered: user.skillsOffered,
-        skillsWanted: user.skillsWanted,
-        availability: user.availability,
-        visibility: user.visibility,
-        rating: user.rating,
+        token, // Include token in user object
+        profilePic: user.profilePic || "/placeholder.svg",
+        location: user.location || "",
+        skillsOffered: user.skillsOffered || [],
+        skillsWanted: user.skillsWanted || [],
+        availability: user.availability || "Evenings",
+        visibility: user.visibility || "Private",
+        rating: user.rating || 0,
+        feedback: user.feedback || [],
       },
     });
   } catch (error) {
