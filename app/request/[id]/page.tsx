@@ -226,10 +226,10 @@ export default function RequestSwapPage() {
       
       <Navbar />
 
-      <div className="container py-8 relative">
-        <Card className="backdrop-blur-md bg-card/30 border-border/50">
+      <div className="container py-8 relative ">
+        <Card className="backdrop-blur-md bg-card/30 border 4px">
           <CardHeader className="text-center space-y-4">
-            <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-black">
               Request Skill Swap
             </CardTitle>
             <div className="flex items-center justify-center gap-4 mt-4">
@@ -246,46 +246,56 @@ export default function RequestSwapPage() {
 
           <CardContent>
             {!hasValidMatch ? (
-              <div className="text-center py-8">
-                <div className="bg-destructive/10 backdrop-blur-sm border border-destructive/20 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-destructive mb-2">No Valid Skill Match</h3>
-                  <p className="text-destructive/90 mb-4">
-                    You don't have any skills that {targetUser.name} wants, or they don't have any skills that you want.
-                  </p>
+  <div className="text-center space-y-6 py-10">
+    {/* small badge instead of big rectangle */}
+    <Badge variant="destructive" className="px-4 py-2 text-sm">
+      No valid skill match
+    </Badge>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 text-left">
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-foreground">Your Skills:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {currentUser!.skillsOffered.map((skill) => (
-                          <Badge key={skill} variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+    <p className="text-sm text-slate-600">
+      You don’t have any skills <strong>{targetUser.name}</strong> wants,
+      or they don’t offer any skills you’re looking for.
+    </p>
 
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-foreground">{targetUser.name}'s Wanted Skills:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {targetUser.skillsWanted.map((skill) => (
-                          <Badge key={skill} variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 backdrop-blur-sm">
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+    {/* show both users’ skills for clarity */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+      <div className="space-y-2">
+        <h4 className="font-medium text-slate-700">Your Skills</h4>
+        <div className="flex flex-wrap gap-2">
+          {currentUser!.skillsOffered.length
+            ? currentUser!.skillsOffered.map((skill) => (
+                <Badge key={skill} variant="outline" className="border-slate-300">
+                  {skill}
+                </Badge>
+              ))
+            : <span className="italic text-slate-500">None listed</span>}
+        </div>
+      </div>
 
-                  <Button 
-                    onClick={() => router.push("/")} 
-                    className="mt-6 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300"
-                  >
-                    Find Other Users
-                  </Button>
-                </div>
-              </div>
-            ) : (
+      <div className="space-y-2">
+        <h4 className="font-medium text-slate-700">
+          {targetUser.name}&rsquo;s Wanted Skills
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {targetUser.skillsWanted.length
+            ? targetUser.skillsWanted.map((skill) => (
+                <Badge key={skill} variant="outline" className="border-slate-300">
+                  {skill}
+                </Badge>
+              ))
+            : <span className="italic text-slate-500">None listed</span>}
+        </div>
+      </div>
+    </div>
+
+    <Button
+      onClick={() => router.push("/")}
+      className="mt-2 w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700"
+    >
+      Find other users
+    </Button>
+  </div>
+) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label className="text-foreground/90" htmlFor="offeredSkill">Choose one of your offered skills</Label>
