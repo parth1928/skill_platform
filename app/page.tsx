@@ -151,22 +151,46 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background overflow-hidden">
       <Navbar />
 
       <div className="container py-20">
         {/* Hero Section */}
-        <div className="relative text-center mb-20">
+        <div className="relative text-center mb-20 overflow-hidden">
+          {/* Background Elements */}
           <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)]" />
+            {/* Animated Grid */}
+            <div className="absolute inset-0 hero-grid animate-grid-fade-in opacity-0" />
+            
+            {/* Center Glow */}
+            <div className="absolute inset-0 hero-glow animate-glow-pulse" />
+            
+            {/* Radial Gradient Overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--background)_70%)]" />
+            
+            {/* Glowing Lines */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-0 w-px h-32 bg-gradient-to-b from-foreground/20 to-transparent animate-glow-pulse" />
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 h-px w-32 bg-gradient-to-r from-transparent via-foreground/20 to-transparent animate-glow-pulse" />
+            <div className="absolute top-1/2 -translate-y-1/2 right-0 h-px w-32 bg-gradient-to-l from-transparent via-foreground/20 to-transparent animate-glow-pulse" />
           </div>
-          <div className="relative">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent pb-2 mb-4">
-              Professional Skill Exchange Platform
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Connect with professionals to exchange expertise and accelerate your career growth.
-            </p>
+          
+          <div className="relative animate-fade-in">
+            <div className="relative z-10 max-w-4xl mx-auto px-4">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-foreground pb-2 mb-6 leading-tight">
+                Professional Skill Exchange Platform
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+                Connect with professionals to exchange expertise and accelerate your career growth.
+              </p>
+            </div>
+            {/* Fade out effect at the bottom */}
+            <div className="absolute inset-x-0 top-[calc(100%+1rem)] h-40 bg-gradient-to-b from-background to-transparent -z-10" />
+            {/* Glowing lines */}
+            <div className="absolute inset-0 -z-10">
+              <div className="absolute top-0 left-1/2 w-px h-32 bg-gradient-to-b from-foreground/10 to-transparent transform -translate-x-1/2" />
+              <div className="absolute top-1/2 left-0 w-32 h-px bg-gradient-to-r from-foreground/10 to-transparent" />
+              <div className="absolute top-1/2 right-0 w-32 h-px bg-gradient-to-l from-foreground/10 to-transparent" />
+            </div>
           </div>
         </div>
 

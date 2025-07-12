@@ -209,12 +209,12 @@ export default function DashboardPage() {
   const rejectedCount = getFilteredRequests(user.uid, "rejected").length
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       <div className="container py-20">
         <div className="mb-12">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
+          <h1 className="text-4xl font-bold text-foreground mb-3">
             Swap Requests Dashboard
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -223,10 +223,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="relative mb-16">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)]" />
-          </div>
-
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <TabsList className="grid w-full grid-cols-4 p-1 bg-muted rounded-full">
               <TabsTrigger value="pending" className="rounded-full data-[state=active]:bg-background">
