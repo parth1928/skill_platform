@@ -91,15 +91,21 @@ export function useChat(swapRequestId: string) {
     }
   }, [user, swapRequestId, toast])
 
-  // Initial fetch
+  // Initial fetch and real-time updates
   useEffect(() => {
-    fetchMessages()
+    if (!swapRequestId) return;
     
-    // Set up polling for new messages
-    const pollInterval = setInterval(fetchMessages, 3000)
+    fetchMessages();
     
-    return () => clearInterval(pollInterval)
-  }, [fetchMessages])
+    // Set up polling for new messages every 2 seconds
+    const pollInterval = setInterval(fetchMessages, 2000);
+    
+    // Clean up interval on unmount or swapRequestId change
+    return () => {
+      clearInterval(pollInterval);
+      setMessages([]); // Clear messages when changing chats
+    };
+  }, [fetchMessages, swapRequestId])
 
   return {
     messages,
