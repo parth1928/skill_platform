@@ -4,7 +4,10 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
 // Get chat messages for a swap request
-export async function GET(req: Request, { params }: { params: { swapId: string } }) {
+export async function GET(
+  req: Request,
+  context: { params: { swapId: string } }
+) {
   try {
     const authHeader = req.headers.get("Authorization")
     if (!authHeader?.startsWith("Bearer ")) {
@@ -19,9 +22,15 @@ export async function GET(req: Request, { params }: { params: { swapId: string }
 
     const db = await connectToDatabase()
     
+    // Extract and validate swapId
+    const swapId = context.params.swapId
+    if (!ObjectId.isValid(swapId)) {
+      return NextResponse.json({ error: "Invalid swap ID" }, { status: 400 })
+    }
+
     // Verify swap request exists and user is a participant
     const swapRequest = await db.collection("swapRequests").findOne({
-      _id: new ObjectId(params.swapId),
+      _id: new ObjectId(swapId),
       $or: [
         { fromUserId: new ObjectId(payload.userId) },
         { toUserId: new ObjectId(payload.userId) }
@@ -34,13 +43,13 @@ export async function GET(req: Request, { params }: { params: { swapId: string }
 
     // Get or create chat
     let chat = await db.collection("chats").findOne({
-      swapRequestId: new ObjectId(params.swapId)
+      swapRequestId: new ObjectId(swapId)
     })
 
     if (!chat) {
       // Create new chat
       const result = await db.collection("chats").insertOne({
-        swapRequestId: new ObjectId(params.swapId),
+        swapRequestId: new ObjectId(swapId),
         messages: [],
         participants: [new ObjectId(swapRequest.fromUserId), new ObjectId(swapRequest.toUserId)],
         lastMessageAt: new Date(),
@@ -58,7 +67,10 @@ export async function GET(req: Request, { params }: { params: { swapId: string }
 }
 
 // Send a new message
-export async function POST(req: Request, { params }: { params: { swapId: string } }) {
+export async function POST(
+  req: Request,
+  context: { params: { swapId: string } }
+) {
   try {
     const authHeader = req.headers.get("Authorization")
     if (!authHeader?.startsWith("Bearer ")) {
@@ -77,10 +89,16 @@ export async function POST(req: Request, { params }: { params: { swapId: string 
     }
 
     const db = await connectToDatabase()
+
+    // Extract and validate swapId
+    const swapId = context.params.swapId
+    if (!ObjectId.isValid(swapId)) {
+      return NextResponse.json({ error: "Invalid swap ID" }, { status: 400 })
+    }
     
     // Verify swap request exists and user is a participant
     const swapRequest = await db.collection("swapRequests").findOne({
-      _id: new ObjectId(params.swapId),
+      _id: new ObjectId(swapId),
       $or: [
         { fromUserId: new ObjectId(payload.userId) },
         { toUserId: new ObjectId(payload.userId) }
@@ -108,17 +126,23 @@ export async function POST(req: Request, { params }: { params: { swapId: string 
     }
 
     // Update or create chat
-    await db.collection("chats").updateOne(
-      { swapRequestId: new ObjectId(params.swapId) },
+    const result = await db.collection("chats").findOneAndUpdate(
+      { swapRequestId: new ObjectId(swapId) },
       {
         $push: { messages: newMessage },
-        $set: { lastMessageAt: new Date(), updatedAt: new Date() },
+        $set: { 
+          lastMessageAt: new Date(),
+          updatedAt: new Date()
+        },
         $setOnInsert: {
           participants: [new ObjectId(swapRequest.fromUserId), new ObjectId(swapRequest.toUserId)],
           createdAt: new Date()
         }
       },
-      { upsert: true }
+      { 
+        upsert: true,
+        returnDocument: 'after'
+      }
     )
 
     return NextResponse.json({ message: newMessage })
