@@ -110,8 +110,8 @@ export default function LoginPage() {
           >
             {isLoading ? "Please wait..." : "Login"}
           </Button>          <Button variant="outline" className="w-full">
-            Login with Google
-          </Button>
+            Login with Linkedin
+          </Button> 
         </CardFooter>
       </Card>
     </div>

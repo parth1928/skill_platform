@@ -25,6 +25,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-background text-foreground min-h-screen`}>
+        {/* Grid background overlay */}
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 grid-bg" />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <div className="relative min-h-screen flex flex-col">

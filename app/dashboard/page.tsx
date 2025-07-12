@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
+import { useState } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
@@ -8,18 +9,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Clock, CheckCircle, XCircle, Send, Inbox, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Clock, CheckCircle, XCircle, Send, Inbox, ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useSwapRequests } from "@/hooks/use-swap-requests"
+
+interface ChatUser {
+  name: string;
+  pic?: string;
+  id: string;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { requests, acceptRequest, rejectRequest, getFilteredRequests } = useSwapRequests()
+  const { requests, acceptRequest, rejectRequest, getFilteredRequests, loading, refresh } = useSwapRequests()
 
   const [activeTab, setActiveTab] = useState("pending")
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatUser, setChatUser] = useState<ChatUser | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -31,16 +40,18 @@ export default function DashboardPage() {
     return null
   }
 
-  const handleAcceptRequest = (requestId: string) => {
-    acceptRequest(requestId)
+  const handleAcceptRequest = async (requestId: string) => {
+    await acceptRequest(requestId)
+    await refresh()
     toast({
       title: "Request accepted! 🎉",
       description: "The swap request has been accepted successfully. You can now coordinate with the other user!",
     })
   }
 
-  const handleRejectRequest = (requestId: string) => {
-    rejectRequest(requestId)
+  const handleRejectRequest = async (requestId: string) => {
+    await rejectRequest(requestId)
+    await refresh()
     toast({
       title: "Request rejected",
       description: "The swap request has been rejected.",
@@ -72,7 +83,7 @@ export default function DashboardPage() {
         }
 
     return (
-      <Card key={request.id} className="hover:shadow-2xl hover:shadow-primary/5 transition-all duration-200">
+      <Card key={request._id} className="hover:shadow-2xl hover:shadow-primary/5 transition-all duration-200">
         <CardContent className="pt-6">
           <div className="flex items-start gap-6">
             <Avatar className="w-16 h-16 ring-4 ring-background">
@@ -144,12 +155,12 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 mb-3">{formatDate(request.timestamp)}</p>
+              <p className="text-xs text-gray-500 mb-3">{formatDate(request.createdAt)}</p>
 
               {showActions && request.status === "Pending" && isIncoming && (
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => handleAcceptRequest(request.id)}
+                    onClick={() => handleAcceptRequest(request._id)}
                     className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 rounded-full"
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
@@ -157,7 +168,7 @@ export default function DashboardPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => handleRejectRequest(request.id)}
+                    onClick={() => handleRejectRequest(request._id)}
                     className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-full"
                   >
                     <ThumbsDown className="w-4 h-4 mr-2" />
@@ -172,8 +183,19 @@ export default function DashboardPage() {
                     🎉 Swap accepted! You can now coordinate with {otherUser.name} to schedule your skill exchange.
                   </p>
                   <div className="flex gap-3">
-                    <Button className="rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70">
-                      Contact {otherUser.name}
+                    <Button 
+                      className="rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70"
+                      onClick={() => {
+                        setChatOpen(true);
+                        setChatUser({
+                          name: otherUser.name,
+                          pic: otherUser.pic,
+                          id: otherUser.id
+                        });
+                      }}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Chat with {otherUser.name}
                     </Button>
                     <Button variant="outline" className="rounded-full hover:bg-primary/10">
                       Leave Feedback
@@ -201,6 +223,48 @@ export default function DashboardPage() {
       </Card>
     )
   }
+
+  const ChatModal = () => {
+    if (!chatOpen || !chatUser) return null;
+    
+    return (
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" 
+        onClick={() => setChatOpen(false)}
+      >
+        <div 
+          className="bg-background rounded-2xl shadow-2xl p-8 w-full max-w-md" 
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold">Chat with {chatUser.name}</h2>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full" 
+              onClick={() => setChatOpen(false)}
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="h-96 bg-muted/30 rounded-lg mb-4 p-4 flex flex-col">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              Chat feature coming soon...
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Type your message..."
+              className="flex-1 bg-background border rounded-full px-4 py-2"
+              disabled
+            />
+            <Button className="rounded-full" disabled>Send</Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Get counts for each tab
   const pendingCount = getFilteredRequests(user._id, "pending").length
@@ -255,10 +319,10 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-2xl">
-                    <Inbox className="w-6 h-6 text-primary" />
+                    <Inbox className="w-6 h-6 text-yellow-500" />
                     Incoming Requests
                   </CardTitle>
-                  <p className="text-muted-foreground">Requests from other users waiting for your response</p>
+                  <p className="text-muted-foreground">Manage your skill swap requests and connections</p>
                 </CardHeader>
                 <CardContent>
                   {pendingCount === 0 ? (
@@ -281,7 +345,6 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="sent" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -315,7 +378,6 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="accepted" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -332,10 +394,10 @@ export default function DashboardPage() {
                         <CheckCircle className="w-10 h-10 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
-                        No accepted swaps yet
+                        No accepted swaps
                       </h3>
                       <p className="text-muted-foreground">
-                        Accepted swaps will appear here for coordination.
+                        When you accept a swap request, it will appear here.
                       </p>
                     </div>
                   ) : (
@@ -346,7 +408,6 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
             <TabsContent value="rejected" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -354,7 +415,7 @@ export default function DashboardPage() {
                     <XCircle className="w-6 h-6 text-destructive" />
                     Rejected Requests
                   </CardTitle>
-                  <p className="text-muted-foreground">Requests that were declined</p>
+                  <p className="text-muted-foreground">Requests you've rejected or were rejected by others</p>
                 </CardHeader>
                 <CardContent>
                   {rejectedCount === 0 ? (
@@ -366,7 +427,7 @@ export default function DashboardPage() {
                         No rejected requests
                       </h3>
                       <p className="text-muted-foreground">
-                        Rejected requests will appear here for reference.
+                        When you reject a swap request, it will appear here.
                       </p>
                     </div>
                   ) : (

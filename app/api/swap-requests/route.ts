@@ -80,10 +80,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create swap request
+    // Create swap request with user details
     const swapRequest = {
       fromUserId: new ObjectId(decoded.userId),
       toUserId: new ObjectId(toUserId),
+      fromUserName: fromUser.name,
+      toUserName: toUser.name,
+      fromUserPic: fromUser.profilePic || "/placeholder.svg",
+      toUserPic: toUser.profilePic || "/placeholder.svg",
       offeredSkill,
       requestedSkill,
       message: message || "",
@@ -166,16 +170,13 @@ export async function GET(request: Request) {
         },
         {
           $project: {
-            fromUser: {
-              _id: 1,
-              name: 1,
-              profilePic: 1
-            },
-            toUser: {
-              _id: 1,
-              name: 1,
-              profilePic: 1
-            },
+            _id: 1,
+            fromUserId: "$fromUser._id",
+            toUserId: "$toUser._id",
+            fromUserName: "$fromUser.name",
+            toUserName: "$toUser.name",
+            fromUserPic: { $ifNull: ["$fromUser.profilePic", "/placeholder.svg"] },
+            toUserPic: { $ifNull: ["$toUser.profilePic", "/placeholder.svg"] },
             offeredSkill: 1,
             requestedSkill: 1,
             message: 1,

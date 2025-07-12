@@ -1,3 +1,21 @@
+/* Grid background overlay for the whole site */
+.grid-bg {
+  /* Modern subtle dot grid pattern, adapts to light/dark mode */
+  background-color: transparent;
+  background-image:
+    radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1.5px);
+  background-size: 28px 28px;
+  background-position: 0 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dark .grid-bg {
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1.5px);
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

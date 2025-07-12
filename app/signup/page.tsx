@@ -161,7 +161,7 @@ export default function SignUpPage() {
             {isLoading ? "Please wait..." : "Create Account"}
           </Button>
           <Button variant="outline" className="w-full">
-            Sign up with Google
+            Sign up with LinkedIn
           </Button>
         </CardFooter>
       </Card>

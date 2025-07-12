@@ -118,7 +118,7 @@ export default function RequestSwapPage() {
 
           <CardContent>
             {!hasValidMatch ? (
-              <div className="text-center space-y-6 py-10">
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
                 <Badge variant="destructive" className="px-4 py-2 text-base font-semibold">
                    No Valid Skill Match
                 </Badge>
@@ -165,6 +165,13 @@ export default function RequestSwapPage() {
 
                 setSubmitting(true);
                 try {
+                  console.log('Sending swap request:', {
+                    toUserId: targetUser._id,
+                    offeredSkill,
+                    requestedSkill,
+                    message: message.trim(),
+                  });
+
                   const response = await fetch('/api/swap-requests', {
                     method: 'POST',
                     headers: {
@@ -261,7 +268,7 @@ export default function RequestSwapPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </div>  
     </div>
   )
 }
