@@ -67,9 +67,8 @@ export default function RequestSwapPage() {
           return
         }
 
-        // Format the ID properly
-        const userId = (params.id as string).padStart(24, '0')
-        console.log("Fetching user with formatted ID:", userId)
+        const userId = params.id as string
+        console.log("Fetching user with ID:", userId)
         
         // Fetch target user data
         const response = await fetch(`/api/users/${userId}`, {

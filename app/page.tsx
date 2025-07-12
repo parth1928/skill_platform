@@ -102,9 +102,7 @@ export default function HomePage() {
       router.push("/login")
       return
     }
-    // Convert string ID to hex string if needed
-    const formattedId = targetUserId.toString().padStart(24, '0')
-    router.push(`/request/${formattedId}`)
+    router.push(`/request/${targetUserId}`)
   }
 
   const handleViewProfile = (targetUserId: string) => {
@@ -112,9 +110,7 @@ export default function HomePage() {
       router.push("/login")
       return
     }
-    // Convert string ID to hex string if needed
-    const formattedId = targetUserId.toString().padStart(24, '0')
-    router.push(`/profile/${formattedId}`)
+    router.push(`/profile/${targetUserId}`)
   }
 
   return (
@@ -211,9 +207,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 max-w-7xl mx-auto">
             {users.map((profileUser) => (
               <div key={profileUser._id} className="rounded-2xl bg-gradient-to-b from-background to-muted/10 backdrop-blur p-8 border shadow-xl transition-all duration-200 hover:shadow-2xl hover:shadow-primary/5">
-                <div className="text-center mb-6">
-                  <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-background">
-                    <AvatarImage src={profileUser.profilePic || "/placeholder.svg"} alt={profileUser.name} />
+                <div className="text-center mb-6">                    <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-background">
+                    <AvatarImage src={profileUser.profilePic || "/placeholder-user.jpg"} alt={profileUser.name} />
                     <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
                       {profileUser.name.charAt(0)}
                     </AvatarFallback>

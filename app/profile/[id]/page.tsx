@@ -39,7 +39,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const userId = (params.id as string).padStart(24, '0')
+        const userId = params.id as string;
         console.log("Fetching profile for user:", userId)
 
         const response = await fetch(`/api/users/${userId}`, {

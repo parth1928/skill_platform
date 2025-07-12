@@ -32,17 +32,17 @@ async function updateProfile(req: NextRequest) {
       profilePic,
     } = body;
 
-    // Update user
+    // Update user with all fields, allowing empty values
     const user = await User.findByIdAndUpdate(
       decoded.userId,
       {
-        ...(name && { name }),
-        ...(location && { location }),
-        ...(skillsOffered && { skillsOffered }),
-        ...(skillsWanted && { skillsWanted }),
-        ...(availability && { availability }),
-        ...(visibility && { visibility }),
-        ...(profilePic && { profilePic }),
+        name,
+        location,
+        skillsOffered,
+        skillsWanted,
+        availability,
+        visibility,
+        profilePic,
       },
       { new: true }
     );

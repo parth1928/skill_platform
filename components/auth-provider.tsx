@@ -28,18 +28,27 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<boolean>
   logout: () => void
   updateProfile: (updates: Partial<User>) => Promise<boolean>
+  isLoading?: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("currentUser")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    try {
+      // Check for stored user session
+      const storedUser = localStorage.getItem("currentUser")
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+      }
+    } catch (error) {
+      console.error("Error loading user from localStorage:", error)
+      localStorage.removeItem("currentUser") // Clear potentially corrupt data
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 
@@ -126,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, login, register, logout, updateProfile }}>
-      {children}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   )
 }
