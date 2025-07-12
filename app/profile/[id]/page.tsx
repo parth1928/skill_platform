@@ -12,9 +12,9 @@ import { useRouter } from "next/navigation"
 import { useParams } from "next/navigation"
 
 interface User {
-  uid: string
+  _id: string
   name: string
-  email: string
+  email?: string
   location?: string
   profilePic?: string
   skillsOffered: string[]
@@ -29,59 +29,6 @@ interface User {
   }>
 }
 
-// Mock users data
-const mockUsers: User[] = [
-  {
-    uid: "user1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    location: "San Francisco, CA",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["JavaScript", "React", "Node.js"],
-    skillsWanted: ["Python", "Machine Learning", "Data Science"],
-    availability: "Evenings",
-    visibility: "Public",
-    rating: 4.8,
-    feedback: [
-      { from: "user2", message: "Great teacher! Very patient and knowledgeable.", stars: 5 },
-      { from: "user3", message: "Excellent React knowledge. Helped me understand hooks.", stars: 5 },
-      { from: "user4", message: "Professional and well-prepared sessions.", stars: 4 },
-    ],
-  },
-  {
-    uid: "user2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    location: "New York, NY",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Python", "Django", "PostgreSQL"],
-    skillsWanted: ["React", "TypeScript", "AWS"],
-    availability: "Weekends",
-    visibility: "Public",
-    rating: 4.6,
-    feedback: [
-      { from: "user1", message: "Very knowledgeable in Python and databases.", stars: 5 },
-      { from: "user3", message: "Good teacher, clear explanations.", stars: 4 },
-    ],
-  },
-  {
-    uid: "user3",
-    name: "Carol Davis",
-    email: "carol@example.com",
-    location: "Austin, TX",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-    skillsWanted: ["Frontend Development", "CSS", "JavaScript"],
-    availability: "Mornings",
-    visibility: "Public",
-    rating: 4.9,
-    feedback: [
-      { from: "user1", message: "Amazing design skills! Great eye for detail.", stars: 5 },
-      { from: "user2", message: "Professional designer with excellent communication.", stars: 5 },
-    ],
-  },
-]
-
 export default function UserProfilePage() {
   const { user: currentUser } = useAuth()
   const router = useRouter()
@@ -90,26 +37,47 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!currentUser) {
-      router.push("/login")
-      return
+    const fetchUserProfile = async () => {
+      try {
+        const userId = (params.id as string).padStart(24, '0')
+        console.log("Fetching profile for user:", userId)
+
+        const response = await fetch(`/api/users/${userId}`, {
+          headers: currentUser?.token
+            ? { Authorization: `Bearer ${currentUser.token}` }
+            : {},
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          console.error("API response error:", data)
+          throw new Error(data.error || "Failed to fetch user profile")
+        }
+
+        const userData = data.user
+        console.log("User data received:", userData)
+
+        if (!userData || userData.visibility !== "Public") {
+          router.push("/")
+          return
+        }
+
+        setProfileUser(userData)
+      } catch (error) {
+        console.error("Error fetching profile:", error)
+        router.push("/")
+      } finally {
+        setLoading(false)
+      }
     }
 
-    const userId = params.id as string
-    const foundUser = mockUsers.find((u) => u.uid === userId)
-
-    if (!foundUser || foundUser.visibility !== "Public") {
-      router.push("/")
-      return
-    }
-
-    setProfileUser(foundUser)
-    setLoading(false)
+    fetchUserProfile()
   }, [currentUser, params.id, router])
 
   const handleRequestSwap = () => {
     if (profileUser) {
-      router.push(`/request/${profileUser.uid}`)
+      router.push(`/request/${profileUser._id}`)
     }
   }
 
@@ -149,7 +117,7 @@ export default function UserProfilePage() {
     )
   }
 
-  const canRequestSwap = currentUser?.uid !== profileUser.uid
+  const canRequestSwap = currentUser?._id !== profileUser._id
 
   return (
     <div className="min-h-screen">

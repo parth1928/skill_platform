@@ -58,7 +58,7 @@ export default function DashboardPage() {
   }
 
   const renderRequestCard = (request: any, showActions = false) => {
-    const isIncoming = request.toUserId === user.uid
+    const isIncoming = request.toUserId === user._id
     const otherUser = isIncoming
       ? {
           name: request.fromUserName,
@@ -203,10 +203,10 @@ export default function DashboardPage() {
   }
 
   // Get counts for each tab
-  const pendingCount = getFilteredRequests(user.uid, "pending").length
-  const sentCount = getFilteredRequests(user.uid, "sent").length
-  const acceptedCount = getFilteredRequests(user.uid, "accepted").length
-  const rejectedCount = getFilteredRequests(user.uid, "rejected").length
+  const pendingCount = getFilteredRequests(user._id, "pending").length
+  const sentCount = getFilteredRequests(user._id, "sent").length
+  const acceptedCount = getFilteredRequests(user._id, "accepted").length
+  const rejectedCount = getFilteredRequests(user._id, "rejected").length
 
   return (
     <div className="min-h-screen bg-background">
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {getFilteredRequests(user.uid, "pending").map((request) => renderRequestCard(request, true))}
+                      {getFilteredRequests(user._id, "pending").map((request) => renderRequestCard(request, true))}
                     </div>
                   )}
                 </CardContent>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {getFilteredRequests(user.uid, "sent").map((request) => renderRequestCard(request, false))}
+                      {getFilteredRequests(user._id, "sent").map((request) => renderRequestCard(request, false))}
                     </div>
                   )}
                 </CardContent>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {getFilteredRequests(user.uid, "accepted").map((request) => renderRequestCard(request, false))}
+                      {getFilteredRequests(user._id, "accepted").map((request) => renderRequestCard(request, false))}
                     </div>
                   )}
                 </CardContent>
@@ -371,7 +371,7 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {getFilteredRequests(user.uid, "rejected").map((request) => renderRequestCard(request, false))}
+                      {getFilteredRequests(user._id, "rejected").map((request) => renderRequestCard(request, false))}
                     </div>
                   )}
                 </CardContent>

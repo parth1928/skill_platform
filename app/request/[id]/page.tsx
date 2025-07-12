@@ -17,7 +17,7 @@ import { useParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 
 interface User {
-  uid: string
+  _id: string
   name: string
   email: string
   location?: string
@@ -30,58 +30,16 @@ interface User {
 }
 
 interface SwapRequest {
-  id: string
+  _id: string
   fromUserId: string
   toUserId: string
   offeredSkill: string
   requestedSkill: string
   message: string
   status: "Pending" | "Accepted" | "Rejected"
-  timestamp: string
+  createdAt: string
+  updatedAt: string
 }
-
-// Mock users data
-const mockUsers: User[] = [
-  {
-    uid: "user1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    location: "San Francisco, CA",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["JavaScript", "React", "Node.js"],
-    skillsWanted: ["Python", "Machine Learning", "Data Science"],
-    availability: "Evenings",
-    visibility: "Public",
-    rating: 4.8,
-  },
-  {
-    uid: "user2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    location: "New York, NY",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Python", "Django", "PostgreSQL"],
-    skillsWanted: ["React", "TypeScript", "AWS"],
-    availability: "Weekends",
-    visibility: "Public",
-    rating: 4.6,
-  },
-  {
-    uid: "user3",
-    name: "Carol Davis",
-    email: "carol@example.com",
-    location: "Austin, TX",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-    skillsWanted: ["Frontend Development", "CSS", "JavaScript"],
-    availability: "Mornings",
-    visibility: "Public",
-    rating: 4.9,
-  },
-]
-
-// Mock swap requests storage
-const mockSwapRequests: SwapRequest[] = []
 
 export default function RequestSwapPage() {
   const { user: currentUser } = useAuth()
@@ -102,38 +60,79 @@ export default function RequestSwapPage() {
   const [matchingRequestedSkills, setMatchingRequestedSkills] = useState<string[]>([])
 
   useEffect(() => {
-    if (!currentUser) {
-      router.push("/login")
-      return
+    const fetchUserData = async () => {
+      try {
+        if (!currentUser) {
+          router.push("/login")
+          return
+        }
+
+        // Format the ID properly
+        const userId = (params.id as string).padStart(24, '0')
+        console.log("Fetching user with formatted ID:", userId)
+        
+        // Fetch target user data
+        const response = await fetch(`/api/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        })
+        const data = await response.json()
+
+        if (!response.ok) {
+          console.error("API response error:", data)
+          throw new Error(data.error || "Failed to fetch user")
+        }
+
+        const foundUser = data.user
+        console.log("Found user:", foundUser)
+
+        if (!foundUser || foundUser.visibility !== "Public") {
+          toast({
+            title: "User not accessible",
+            description: "This user's profile is not publicly available.",
+            variant: "destructive",
+          })
+          router.push("/")
+          return
+        }
+
+        if (foundUser._id === currentUser._id) {
+          toast({
+            title: "Invalid request",
+            description: "You can't swap with yourself.",
+            variant: "destructive",
+          })
+          router.push("/")
+          return
+        }
+
+        setTargetUser(foundUser)
+
+        // Find matching skills
+        const offeredMatches = currentUser.skillsOffered?.filter((skill: string) => 
+          foundUser.skillsWanted?.includes(skill)
+        ) || []
+        const requestedMatches = foundUser.skillsOffered?.filter((skill: string) => 
+          currentUser.skillsWanted?.includes(skill)
+        ) || []
+
+        setMatchingOfferedSkills(offeredMatches)
+        setMatchingRequestedSkills(requestedMatches)
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to load user data. Please try again later.",
+          variant: "destructive",
+        })
+        router.push("/")
+      } finally {
+        setLoading(false)
+      }
     }
 
-    const userId = params.id as string
-    const foundUser = mockUsers.find((u) => u.uid === userId)
-
-    if (!foundUser || foundUser.visibility !== "Public") {
-      router.push("/")
-      return
-    }
-
-    if (foundUser.uid === currentUser.uid) {
-      toast({
-        title: "Invalid request",
-        description: "You can't swap with yourself.",
-        variant: "destructive",
-      })
-      router.push("/")
-      return
-    }
-
-    setTargetUser(foundUser)
-
-    // Find matching skills
-    const offeredMatches = currentUser.skillsOffered.filter((skill) => foundUser.skillsWanted.includes(skill))
-    const requestedMatches = foundUser.skillsOffered.filter((skill) => currentUser.skillsWanted.includes(skill))
-
-    setMatchingOfferedSkills(offeredMatches)
-    setMatchingRequestedSkills(requestedMatches)
-    setLoading(false)
+    fetchUserData()
   }, [currentUser, params.id, router, toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,36 +147,28 @@ export default function RequestSwapPage() {
       return
     }
 
-    // Check for existing pending request
-    const existingRequest = mockSwapRequests.find(
-      (req) => req.fromUserId === currentUser!.uid && req.toUserId === targetUser!.uid && req.status === "Pending",
-    )
-
-    if (existingRequest) {
-      toast({
-        title: "Request already exists",
-        description: "You already have a pending request with this user.",
-        variant: "destructive",
-      })
-      return
-    }
-
     setSubmitting(true)
 
     try {
-      // Create new swap request
-      const newRequest: SwapRequest = {
-        id: `swap_${Date.now()}`,
-        fromUserId: currentUser!.uid,
-        toUserId: targetUser!.uid,
-        offeredSkill,
-        requestedSkill,
-        message: message.trim(),
-        status: "Pending",
-        timestamp: new Date().toISOString(),
-      }
+      const response = await fetch("/api/swap-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser!.token}`,
+        },
+        body: JSON.stringify({
+          toUserId: targetUser!._id,
+          offeredSkill,
+          requestedSkill,
+          message: message.trim(),
+        }),
+      })
 
-      mockSwapRequests.push(newRequest)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send request")
+      }
 
       toast({
         title: "Swap request sent successfully!",
@@ -186,9 +177,10 @@ export default function RequestSwapPage() {
 
       router.push("/dashboard")
     } catch (error) {
+      console.error("Error sending swap request:", error)
       toast({
         title: "Error",
-        description: "Failed to send swap request. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send swap request. Please try again.",
         variant: "destructive",
       })
     } finally {

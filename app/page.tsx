@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Star, Search, MapPin, Clock, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import useDebounce from "@/src/hooks/use-debounce"
 
 interface User {
-  uid: string
+  _id: string
   name: string
   email: string
   location?: string
@@ -24,81 +25,12 @@ interface User {
   rating: number
 }
 
-// Mock data
-const mockUsers: User[] = [
-  {
-    uid: "user1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    location: "San Francisco, CA",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["JavaScript", "React", "Node.js"],
-    skillsWanted: ["Python", "Machine Learning", "Data Science"],
-    availability: "Evenings",
-    visibility: "Public",
-    rating: 4.8,
-  },
-  {
-    uid: "user2",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    location: "New York, NY",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Python", "Django", "PostgreSQL"],
-    skillsWanted: ["React", "TypeScript", "AWS"],
-    availability: "Weekends",
-    visibility: "Public",
-    rating: 4.6,
-  },
-  {
-    uid: "user3",
-    name: "Carol Davis",
-    email: "carol@example.com",
-    location: "Austin, TX",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-    skillsWanted: ["Frontend Development", "CSS", "JavaScript"],
-    availability: "Mornings",
-    visibility: "Public",
-    rating: 4.9,
-  },
-  {
-    uid: "user4",
-    name: "David Wilson",
-    email: "david@example.com",
-    location: "Seattle, WA",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Machine Learning", "TensorFlow", "Data Analysis"],
-    skillsWanted: ["Web Development", "React", "JavaScript"],
-    availability: "Weekends",
-    visibility: "Public",
-    rating: 4.7,
-  },
-  {
-    uid: "user5",
-    name: "Emma Brown",
-    email: "emma@example.com",
-    location: "Chicago, IL",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Digital Marketing", "SEO", "Content Writing"],
-    skillsWanted: ["Graphic Design", "Photography", "Video Editing"],
-    availability: "Evenings",
-    visibility: "Public",
-    rating: 4.5,
-  },
-  {
-    uid: "user6",
-    name: "Frank Miller",
-    email: "frank@example.com",
-    location: "Denver, CO",
-    profilePic: "/placeholder.svg?height=100&width=100",
-    skillsOffered: ["Photography", "Video Editing", "Adobe Premiere"],
-    skillsWanted: ["Web Design", "CSS", "JavaScript"],
-    availability: "Mornings",
-    visibility: "Public",
-    rating: 4.4,
-  },
-]
+interface PaginationData {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -106,40 +38,73 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [pagination, setPagination] = useState<PaginationData>({
+    total: 0,
+    page: 1,
+    limit: 6,
+    totalPages: 0,
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  const usersPerPage = 6
+  const debouncedSearch = useDebounce(searchTerm, 300)
 
   useEffect(() => {
-    let filtered = mockUsers.filter((u) => u.visibility === "Public" && u.uid !== user?.uid)
+    const fetchUsers = async () => {
+      try {
+        setLoading(true)
+        setError("")
 
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (u) =>
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.skillsOffered.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          u.skillsWanted.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase())),
-      )
+        const searchParams = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: "6",
+        })
+
+        if (debouncedSearch) {
+          searchParams.append("query", debouncedSearch)
+        }
+
+        if (availabilityFilter !== "all") {
+          searchParams.append("availability", availabilityFilter)
+        }
+
+        const token = user?.token
+        const headers: HeadersInit = {}
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`
+        }
+
+        const response = await fetch(`/api/users/search?${searchParams.toString()}`, {
+          headers,
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch users")
+        }
+
+        const data = await response.json()
+        setUsers(data.users)
+        setPagination(data.pagination)
+      } catch (err) {
+        console.error("Error fetching users:", err)
+        setError("Failed to load users. Please try again later.")
+      } finally {
+        setLoading(false)
+      }
     }
 
-    if (availabilityFilter !== "all") {
-      filtered = filtered.filter((u) => u.availability.toLowerCase() === availabilityFilter)
-    }
-
-    setFilteredUsers(filtered)
-    setCurrentPage(1)
-  }, [searchTerm, availabilityFilter, user])
-
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
-  const startIndex = (currentPage - 1) * usersPerPage
-  const currentUsers = filteredUsers.slice(startIndex, startIndex + usersPerPage)
+    fetchUsers()
+  }, [debouncedSearch, availabilityFilter, currentPage, user?.token])
 
   const handleRequest = (targetUserId: string) => {
     if (!user) {
       router.push("/login")
       return
     }
-    router.push(`/request/${targetUserId}`)
+    // Convert string ID to hex string if needed
+    const formattedId = targetUserId.toString().padStart(24, '0')
+    router.push(`/request/${formattedId}`)
   }
 
   const handleViewProfile = (targetUserId: string) => {
@@ -147,7 +112,9 @@ export default function HomePage() {
       router.push("/login")
       return
     }
-    router.push(`/profile/${targetUserId}`)
+    // Convert string ID to hex string if needed
+    const formattedId = targetUserId.toString().padStart(24, '0')
+    router.push(`/profile/${formattedId}`)
   }
 
   return (
@@ -220,137 +187,182 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* User Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 max-w-7xl mx-auto">
-          {currentUsers.map((profileUser) => (
-            <div key={profileUser.uid} className="rounded-2xl bg-gradient-to-b from-background to-muted/10 backdrop-blur p-8 border shadow-xl transition-all duration-200 hover:shadow-2xl hover:shadow-primary/5">
-              <div className="text-center mb-6">
-                <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-background">
-                  <AvatarImage src={profileUser.profilePic || "/placeholder.svg"} alt={profileUser.name} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
-                    {profileUser.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <h3 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                  {profileUser.name}
-                </h3>
-                {profileUser.location && (
-                  <div className="flex items-center justify-center gap-1.5 text-muted-foreground mt-2">
-                    <MapPin className="h-4 w-4" />
-                    <span className="text-sm">{profileUser.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-center gap-3 mt-3">
-                  <div className="flex items-center gap-1.5">
-                    <Star className="h-5 w-5 fill-primary text-primary" />
-                    <span className="text-sm font-medium">{profileUser.rating}</span>
-                  </div>
-                  <span className="text-muted-foreground/40">•</span>
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">{profileUser.availability}</span>
-                  </div>
-                </div>
-              </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+            <p className="text-muted-foreground">Loading professionals...</p>
+          </div>
+        )}
 
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-medium text-foreground/80 mb-3 text-sm">Skills Offered</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profileUser.skillsOffered.slice(0, 3).map((skill) => (
-                      <Badge
-                        key={skill}
-                        className="rounded-full px-3 py-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                    {profileUser.skillsOffered.length > 3 && (
-                      <Badge
-                        className="rounded-full px-3 py-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      >
-                        +{profileUser.skillsOffered.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-foreground/80 mb-3 text-sm">Skills Wanted</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profileUser.skillsWanted.slice(0, 3).map((skill) => (
-                      <Badge
-                        key={skill}
-                        variant="secondary"
-                        className="rounded-full px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                    {profileUser.skillsWanted.length > 3 && (
-                      <Badge
-                        variant="secondary"
-                        className="rounded-full px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20"
-                      >
-                        +{profileUser.skillsWanted.length - 3}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleViewProfile(profileUser.uid)}
-                  >
-                    View Profile
-                  </Button>
-                  <Button
-                    className="flex-1 group"
-                    onClick={() => handleRequest(profileUser.uid)}
-                  >
-                    Request
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </div>
-              </div>
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-destructive text-2xl">!</span>
             </div>
-          ))}
-        </div>
+            <h3 className="text-xl font-semibold text-destructive mb-3">Error</h3>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+        )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center gap-2 mt-12">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(page)}
-                className={
-                  currentPage === page
-                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20"
-                    : "hover:bg-muted/50"
-                }
-              >
-                {page}
-              </Button>
+        {/* User Cards Grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 max-w-7xl mx-auto">
+            {users.map((profileUser) => (
+              <div key={profileUser._id} className="rounded-2xl bg-gradient-to-b from-background to-muted/10 backdrop-blur p-8 border shadow-xl transition-all duration-200 hover:shadow-2xl hover:shadow-primary/5">
+                <div className="text-center mb-6">
+                  <Avatar className="w-20 h-20 mx-auto mb-4 ring-4 ring-background">
+                    <AvatarImage src={profileUser.profilePic || "/placeholder.svg"} alt={profileUser.name} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                      {profileUser.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    {profileUser.name}
+                  </h3>
+                  {profileUser.location && (
+                    <div className="flex items-center justify-center gap-1.5 text-muted-foreground mt-2">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm">{profileUser.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center gap-3 mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <Star className="h-5 w-5 fill-primary text-primary" />
+                      <span className="text-sm font-medium">{profileUser.rating}</span>
+                    </div>
+                    <span className="text-muted-foreground/40">•</span>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">{profileUser.availability}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium text-foreground/80 mb-3 text-sm">Skills Offered</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {profileUser.skillsOffered.slice(0, 3).map((skill) => (
+                        <Badge
+                          key={skill}
+                          className="rounded-full px-3 py-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                      {profileUser.skillsOffered.length > 3 && (
+                        <Badge
+                          className="rounded-full px-3 py-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                        >
+                          +{profileUser.skillsOffered.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-foreground/80 mb-3 text-sm">Skills Wanted</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {profileUser.skillsWanted.slice(0, 3).map((skill) => (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="rounded-full px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                      {profileUser.skillsWanted.length > 3 && (
+                        <Badge
+                          variant="secondary"
+                          className="rounded-full px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20"
+                        >
+                          +{profileUser.skillsWanted.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleViewProfile(profileUser._id)}
+                    >
+                      View Profile
+                    </Button>
+                    <Button
+                      className="flex-1 group"
+                      onClick={() => handleRequest(profileUser._id)}
+                    >
+                      Request
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
 
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-b from-muted to-muted/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <Search className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
-              No professionals found
-            </h3>
-            <p className="text-muted-foreground">
-              Try adjusting your search criteria or filters.
-            </p>
+        {/* Pagination */}
+        {!loading && !error && pagination.totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-12">
+            {/* Previous Page */}
+            {currentPage > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="hover:bg-muted/50"
+              >
+                Previous
+              </Button>
+            )}
+
+            {/* Page Numbers */}
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+              .filter(page => {
+                // Show first page, last page, current page, and pages around current page
+                return (
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  Math.abs(page - currentPage) <= 2
+                )
+              })
+              .map((page, index, array) => (
+                <React.Fragment key={page}>
+                  {index > 0 && array[index - 1] !== page - 1 && (
+                    <span className="px-2 text-muted-foreground">...</span>
+                  )}
+                  <Button
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={
+                      currentPage === page
+                        ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/20"
+                        : "hover:bg-muted/50"
+                    }
+                  >
+                    {page}
+                  </Button>
+                </React.Fragment>
+              ))}
+
+            {/* Next Page */}
+            {currentPage < pagination.totalPages && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="hover:bg-muted/50"
+              >
+                Next
+              </Button>
+            )}
           </div>
         )}
       </div>
