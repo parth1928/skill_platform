@@ -15,14 +15,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import Link from "next/link"
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const { login } = useAuth()
+  const { register } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -31,17 +31,26 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const success = await login(email, password)
+      if (password.length < 8) {
+        toast({
+          title: "Password too short",
+          description: "Password must be at least 8 characters long.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const success = await register(email, password, name)
       if (success) {
         toast({
-          title: "Welcome back",
-          description: "You've successfully signed in.",
+          title: "Account created",
+          description: "Welcome to SkillSwap Pro! Complete your profile to get started.",
         })
-        router.push("/")
+        router.push("/profile/edit")
       } else {
         toast({
-          title: "Sign in failed",
-          description: "Invalid email or password. Try 'password' as password.",
+          title: "Registration failed",
+          description: "Email already exists or invalid data.",
           variant: "destructive",
         })
       }
@@ -56,19 +65,29 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 pb-2">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-2xl font-bold">Login to your account</CardTitle>
+              <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
               <CardDescription className="mt-2">
-                Enter your email below to login to your account
+                Enter your details below to create your account
               </CardDescription>
             </div>
-            <Button variant="ghost" className="text-sm" onClick={() => router.push('/signup')}>
-              Sign Up
+            <Button variant="ghost" className="text-sm" onClick={() => router.push('/login')}>
+              Login
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  placeholder="John Doe"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -81,19 +100,12 @@ export default function LoginPage() {
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   required
+                  placeholder="Minimum 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -102,15 +114,16 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button
-            type="submit"
+          <Button 
+            type="submit" 
             className="w-full"
             onClick={handleSubmit}
             disabled={isLoading}
           >
-            {isLoading ? "Please wait..." : "Login"}
-          </Button>          <Button variant="outline" className="w-full">
-            Login with Google
+            {isLoading ? "Please wait..." : "Create Account"}
+          </Button>
+          <Button variant="outline" className="w-full">
+            Sign up with Google
           </Button>
         </CardFooter>
       </Card>

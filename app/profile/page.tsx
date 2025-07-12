@@ -50,39 +50,39 @@ export default function ProfilePage() {
 
         {/* Update the completion banner */}
         {!isProfileComplete && (
-          <Card className="mb-6 bg-orange-500/10 backdrop-blur-sm border-orange-500/20">
+          <Card className="mb-6 bg-blue-500/10 backdrop-blur-sm border-blue-500/20">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-orange-600 dark:text-orange-400 font-bold text-lg">!</span>
+                <div className="w-10 h-10 bg-blue-500/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">!</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-orange-600 dark:text-orange-400 text-lg">Complete Your Profile</h3>
-                  <p className="text-orange-600/90 dark:text-orange-400/90 text-sm mt-1">
+                  <h3 className="font-semibold text-blue-600 dark:text-blue-400 text-lg">Complete Your Profile</h3>
+                  <p className="text-blue-600/90 dark:text-blue-400/90 text-sm mt-1">
                     Add your skills and preferences to start connecting with other users and make skill swaps.
                     {!user.name?.trim() && " Your name is required."}
                     {user.skillsOffered.length === 0 && user.skillsWanted.length === 0 && " Add at least one skill."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {!user.name?.trim() && (
-                      <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-500/30 backdrop-blur-sm">
+                      <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-500/30 backdrop-blur-sm">
                         Name Missing
                       </Badge>
                     )}
                     {user.skillsOffered.length === 0 && (
-                      <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-500/30 backdrop-blur-sm">
+                      <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-500/30 backdrop-blur-sm">
                         No Skills Offered
                       </Badge>
                     )}
                     {user.skillsWanted.length === 0 && (
-                      <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-500/30 backdrop-blur-sm">
+                      <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-500/30 backdrop-blur-sm">
                         No Skills Wanted
                       </Badge>
                     )}
                   </div>
                 </div>
                 <Link href="/profile/edit">
-                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-300">
+                  <Button className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300">
                     Complete Now
                   </Button>
                 </Link>
@@ -118,11 +118,11 @@ export default function ProfilePage() {
             <div className="flex items-center justify-center gap-2 mt-2">
               <div className="flex items-center gap-1">
                 {user.visibility === "Public" ? (
-                  <Eye className="h-4 w-4 text-emerald-500" />
+                  <Eye className="h-4 w-4 text-blue-500" />
                 ) : (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className={`text-sm ${user.visibility === "Public" ? "text-emerald-500" : "text-muted-foreground"}`}>
+                <span className={`text-sm ${user.visibility === "Public" ? "text-blue-500" : "text-muted-foreground"}`}>
                   {user.visibility} Profile
                 </span>
               </div>
@@ -130,8 +130,8 @@ export default function ProfilePage() {
                 <>
                   <span className="text-muted-foreground/30">•</span>
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{user.rating}</span>
+                    <Star className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-blue-500">{user.rating}</span>
                   </div>
                 </>
               )}
@@ -142,11 +142,13 @@ export default function ProfilePage() {
             {/* Skills Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">Skills I Offer</h3>
+                <h3 className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+                  Skills I Offer
+                </h3>
                 {user.skillsOffered.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.skillsOffered.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm">
+                      <Badge key={skill} variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 backdrop-blur-sm">
                         {skill}
                       </Badge>
                     ))}
@@ -157,11 +159,13 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">Skills I Want</h3>
+                <h3 className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
+                  Skills I Want
+                </h3>
                 {user.skillsWanted.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {user.skillsWanted.map((skill) => (
-                      <Badge key={skill} variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 backdrop-blur-sm">
+                      <Badge key={skill} variant="secondary" className="bg-violet-500/10 text-violet-600 dark:text-violet-400 backdrop-blur-sm">
                         {skill}
                       </Badge>
                     ))}
@@ -174,33 +178,46 @@ export default function ProfilePage() {
 
             {/* Profile Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="bg-blue-500/10 backdrop-blur-sm border-blue-500/20">
+              <Card className="bg-gradient-to-br from-blue-500/10 to-violet-500/10 backdrop-blur-sm border-blue-500/20">
                 <CardContent className="pt-6 text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{user.skillsOffered.length}</div>
+                  <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+                    {user.skillsOffered.length}
+                  </div>
                   <div className="text-sm text-blue-600/90 dark:text-blue-400/90">Skills Offered</div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-emerald-500/10 backdrop-blur-sm border-emerald-500/20">
+              <Card className="bg-gradient-to-br from-violet-500/10 to-blue-500/10 backdrop-blur-sm border-violet-500/20">
                 <CardContent className="pt-6 text-center">
-                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{user.skillsWanted.length}</div>
-                  <div className="text-sm text-emerald-600/90 dark:text-emerald-400/90">Skills Wanted</div>
+                  <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
+                    {user.skillsWanted.length}
+                  </div>
+                  <div className="text-sm text-violet-600/90 dark:text-violet-400/90">Skills Wanted</div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-violet-500/10 backdrop-blur-sm border-violet-500/20">
+              <Card className="bg-gradient-to-br from-blue-500/10 to-violet-500/10 backdrop-blur-sm border-blue-500/20">
                 <CardContent className="pt-6 text-center">
-                  <div className="text-2xl font-bold text-violet-600 dark:text-violet-400">0</div>
-                  <div className="text-sm text-violet-600/90 dark:text-violet-400/90">Swaps Completed</div>
+                  <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+                    0
+                  </div>
+                  <div className="text-sm text-blue-600/90 dark:text-blue-400/90">Swaps Completed</div>
                 </CardContent>
               </Card>
 
-              <Card className={user.visibility === "Public" ? "bg-emerald-500/10 backdrop-blur-sm border-emerald-500/20" : "bg-muted/20 backdrop-blur-sm border-border/50"}>
+              <Card className={user.visibility === "Public" ? 
+                "bg-gradient-to-br from-blue-500/10 to-violet-500/10 backdrop-blur-sm border-blue-500/20" : 
+                "bg-muted/20 backdrop-blur-sm border-border/50"
+              }>
                 <CardContent className="pt-6 text-center">
-                  <div className={`text-2xl font-bold ${user.visibility === "Public" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                  <div className={`text-2xl font-bold ${user.visibility === "Public" ? 
+                    "bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400" : 
+                    "text-muted-foreground"}`}>
                     {user.visibility === "Public" ? "👁️" : "🔒"}
                   </div>
-                  <div className={`text-sm ${user.visibility === "Public" ? "text-emerald-600/90 dark:text-emerald-400/90" : "text-muted-foreground/90"}`}>
+                  <div className={`text-sm ${user.visibility === "Public" ? 
+                    "text-blue-600/90 dark:text-blue-400/90" : 
+                    "text-muted-foreground/90"}`}>
                     {user.visibility} Profile
                   </div>
                 </CardContent>
@@ -210,10 +227,12 @@ export default function ProfilePage() {
             {/* Feedback Section */}
             {user.feedback && user.feedback.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-foreground">Reviews & Feedback</h3>
+                <h3 className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+                  Reviews & Feedback
+                </h3>
                 <div className="space-y-4">
                   {user.feedback.map((review, index) => (
-                    <Card key={index} className="backdrop-blur-sm bg-muted/10 border-border/50">
+                    <Card key={index} className="backdrop-blur-sm bg-gradient-to-br from-blue-500/5 to-violet-500/5 border-border/50">
                       <CardContent className="pt-4">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex">
@@ -221,7 +240,7 @@ export default function ProfilePage() {
                               <Star
                                 key={i}
                                 className={`h-4 w-4 ${
-                                  i < review.stars ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"
+                                  i < review.stars ? "text-blue-500" : "text-muted-foreground/30"
                                 }`}
                               />
                             ))}
