@@ -85,9 +85,15 @@ export function SkillInput({ label, skills, onSkillsChange, placeholder, suggest
               addSkill()
             }
           }}
-          className="flex-1"
+          className="flex-1 bg-background"
         />
-        <Button type="button" onClick={addSkill} size="sm" disabled={!newSkill.trim()}>
+        <Button
+          type="button"
+          onClick={addSkill}
+          size="sm"
+          disabled={!newSkill.trim()}
+          className="bg-foreground text-background hover:bg-foreground/90"
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
@@ -100,7 +106,7 @@ export function SkillInput({ label, skills, onSkillsChange, placeholder, suggest
               {skill}
               <button
                 onClick={() => removeSkill(skill)}
-                className="ml-2 hover:text-red-600 transition-colors"
+                className="ml-2 hover:text-destructive transition-colors"
                 type="button"
               >
                 <X className="h-3 w-3" />
@@ -110,10 +116,10 @@ export function SkillInput({ label, skills, onSkillsChange, placeholder, suggest
         </div>
       )}
 
-      {/* Suggestions */}
-      <div className="space-y-2">
-        <p className="text-sm text-gray-600 font-medium">Quick Add Suggestions:</p>
-        <div className="flex flex-wrap gap-1">
+      {/* Quick Add Suggestions */}
+      <div className="space-y-3 p-4 rounded-lg bg-muted/40 border border-border">
+        <p className="text-sm font-medium text-foreground">Quick Add Suggestions:</p>
+        <div className="flex flex-wrap gap-2">
           {suggestions
             .filter((skill) => !skills.includes(skill))
             .slice(0, 8)
@@ -121,17 +127,18 @@ export function SkillInput({ label, skills, onSkillsChange, placeholder, suggest
               <button
                 key={skill}
                 onClick={() => addSuggestion(skill)}
-                className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full transition-colors border border-gray-200 hover:border-gray-300"
+                className="text-sm px-3 py-1.5 rounded-md bg-background hover:bg-background/90 text-foreground border border-border/50 hover:border-border transition-all duration-200 flex items-center gap-1.5 group"
                 type="button"
               >
-                + {skill}
+                <Plus className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                {skill}
               </button>
             ))}
         </div>
       </div>
 
       {/* Skills count */}
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         {skills.length} skill{skills.length !== 1 ? "s" : ""} added
       </p>
     </div>
