@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { verifyJwt } from "@/lib/jwt"
 import { connectToDatabase } from "@/lib/mongodb"
-import SwapRequest from "@/lib/db/models/SwapRequest"
-import { cookies } from "next/headers"
+import { ObjectId } from "mongodb"
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -24,7 +23,19 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     await connectToDatabase()
 
-    const swapRequest = await SwapRequest.findById(params.id)
+    const db = await connectToDatabase()
+    
+    let swapRequestId;
+    try {
+      swapRequestId = new ObjectId(params.id);
+    } catch (error) {
+      return NextResponse.json({ error: "Invalid request ID format" }, { status: 400 })
+    }
+
+    const swapRequest = await db.collection("swapRequests").findOne({
+      _id: swapRequestId
+    })
+
     if (!swapRequest) {
       return NextResponse.json({ error: "Swap request not found" }, { status: 404 })
     }
@@ -42,8 +53,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       )
     }
 
-    swapRequest.status = "Accepted"
-    await swapRequest.save()
+    await db.collection("swapRequests").updateOne(
+      { _id: swapRequestId },
+      { 
+        $set: { 
+          status: "Accepted",
+          updatedAt: new Date()
+        }
+      }
+    )
 
     return NextResponse.json({ message: "Request accepted successfully" })
   } catch (error) {
