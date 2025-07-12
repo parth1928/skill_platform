@@ -12,6 +12,7 @@ A modern web application for skill exchange and learning built with Next.js 14, 
 - 📊 Dashboard
 - 🎯 Skill Matching
 - 💬 Request Management
+- 💭 Real-time Chat
 
 ## Tech Stack
 
@@ -21,6 +22,8 @@ A modern web application for skill exchange and learning built with Next.js 14, 
 - [shadcn/ui](https://ui.shadcn.com/) - UI Components
 - [Lucide Icons](https://lucide.dev/) - Icons
 - [next-themes](https://github.com/pacocoursey/next-themes) - Theme Management
+- [MongoDB](https://www.mongodb.com/) - Database
+- [MongoDB Compass](https://www.mongodb.com/products/compass) - Database GUI
 
 ## Prerequisites
 
@@ -28,6 +31,8 @@ Make sure you have the following installed:
 
 - Node.js (v18 or higher)
 - npm or pnpm (we recommend pnpm)
+- MongoDB (v6.0 or higher)
+- MongoDB Compass (for database management)
 
 ## Getting Started
 
@@ -46,7 +51,18 @@ pnpm install
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
+```env
+MONGODB_URI=mongodb://localhost:27017/skill_platform
+```
+
+4. Set up MongoDB:
+- Start MongoDB service on your machine
+- Open MongoDB Compass and connect using: `mongodb://localhost:27017`
+- Create a new database named `skill_platform`
+
+5. Run the development server:
 ```bash
 # Using pnpm
 pnpm dev
@@ -55,7 +71,7 @@ pnpm dev
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
 ## Project Structure
 
@@ -84,6 +100,7 @@ skill_platform/
 - `ThemeProvider`: Manages light/dark theme
 - `SkillInput`: Custom component for skill selection
 - `ImageUpload`: Handles profile image uploads
+- `ChatComponent`: Real-time chat interface for skill exchange discussions
 
 ## Styling
 
