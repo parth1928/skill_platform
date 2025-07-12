@@ -132,3 +132,36 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please open an issue in the GitHub repository or contact the maintainers.
+## New Features
+
+- 💬 Chat Feature: Users can now communicate in real-time through a chat interface, enhancing collaboration and interaction.
+
+## MongoDB Setup
+
+To run the application locally with MongoDB, follow these steps:
+
+1. **Install MongoDB**: Download and install MongoDB from the [official website](https://www.mongodb.com/try/download/community).
+2. **Set Up MongoDB Compass**: 
+   - Download and install MongoDB Compass from the [official website](https://www.mongodb.com/try/download/compass).
+   - Open MongoDB Compass and connect to your local MongoDB instance using the following connection string:
+     ```
+     mongodb://localhost:27017
+     ```
+
+3. **Create Environment File**:
+   - Create a `.env` file in the root of your project directory.
+   - Add the following environment variables to the `.env` file:
+     ```
+     MONGODB_URI=mongodb://localhost:27017/your_database_name
+     ```
+
+4. **Run the Application**: After setting up MongoDB, you can run the application using:
+   ```bash
+   pnpm dev
+   ```
+   or
+   ```bash
+   npm run dev
+   ```
+
+Make sure to replace `your_database_name` with the name of the database you want to use.

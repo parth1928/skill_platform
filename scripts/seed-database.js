@@ -24,8 +24,8 @@ async function seedDatabase() {
       {
         _id: new ObjectId(),
         name: "Alice Johnson",
-        email: "alice@example.com",
-        password: hashedPassword,
+        email: "alice@example.com", 
+        password: 123456788989,
         location: "San Francisco, CA",
         profilePic: "/placeholder-user.jpg",
         skillsOffered: ["JavaScript", "React", "Node.js"],
