@@ -133,9 +133,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Don't render anything until we've checked for a stored user session
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateProfile }}>
-      {isLoading ? null : children}
+    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, isLoading }}>
+      {children}
     </AuthContext.Provider>
   )
 }

@@ -33,7 +33,7 @@ interface PaginationData {
 }
 
 export default function HomePage() {
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [availabilityFilter, setAvailabilityFilter] = useState("all")
@@ -51,6 +51,9 @@ export default function HomePage() {
   const debouncedSearch = useDebounce(searchTerm, 300)
 
   useEffect(() => {
+    // Don't fetch users if auth is still loading
+    if (authLoading) return;
+
     const fetchUsers = async () => {
       try {
         setLoading(true)
@@ -95,7 +98,7 @@ export default function HomePage() {
     }
 
     fetchUsers()
-  }, [debouncedSearch, availabilityFilter, currentPage, user?.token])
+  }, [debouncedSearch, availabilityFilter, currentPage, user?.token, authLoading])
 
   const handleRequest = (targetUserId: string) => {
     if (!user) {

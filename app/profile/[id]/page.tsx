@@ -161,7 +161,7 @@ export default function UserProfilePage() {
                   <span className="text-2xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                     {profileUser.rating}
                   </span>
-                  <span className="text-muted-foreground">({profileUser.feedback.length} reviews)</span>
+                  <span className="text-muted-foreground">({(profileUser.feedback || []).length} reviews)</span>
                 </div>
               </div>
             </CardHeader>
@@ -218,7 +218,7 @@ export default function UserProfilePage() {
               )}
 
               {/* Feedback Section */}
-              {profileUser.feedback.length > 0 && (
+              {(profileUser.feedback || []).length > 0 && (
                 <div className="pt-4">
                   <h3 className="text-xl font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
                     Reviews & Feedback

@@ -12,6 +12,11 @@ export interface IUser extends mongoose.Document {
   availability: string;
   visibility: 'Public' | 'Private';
   rating?: number;
+  feedback?: Array<{
+    from: string;
+    message: string;
+    stars: number;
+  }>;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -63,6 +68,14 @@ const userSchema = new mongoose.Schema<IUser>({
     max: 5,
     default: 0,
   },
+  feedback: {
+    type: [{
+      from: String,
+      message: String,
+      stars: Number
+    }],
+    default: []
+  }
 }, {
   timestamps: true,
 });

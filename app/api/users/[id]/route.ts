@@ -54,6 +54,7 @@ export async function GET(
             availability: 1,
             visibility: 1,
             rating: 1,
+            feedback: 1,
             createdAt: 1,
             updatedAt: 1,
             _id: 1,

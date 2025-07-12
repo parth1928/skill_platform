@@ -30,6 +30,6 @@ if (process.env.NODE_ENV === "development") {
 
 export async function connectToDatabase() {
   const client = await clientPromise
-  const db = client.db("skill_platform") // Replace with your database name
+  const db = client.db("skillplatform") // Your database name
   return db
 }
