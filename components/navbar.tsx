@@ -27,7 +27,7 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link
-            href="/"
+            href=""
             className="flex items-center space-x-2 transition-opacity hover:opacity-80"
           >
             <span className="text-xl font-semibold tracking-tight text-foreground">

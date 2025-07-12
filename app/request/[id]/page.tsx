@@ -225,7 +225,7 @@ export default function RequestSwapPage() {
       <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)] pointer-events-none" />
       
       <Navbar />
-
+    <div></div>
       <div className="container py-8 relative ">
         <Card className="backdrop-blur-md bg-card/30 border 4px">
           <CardHeader className="text-center space-y-4">
@@ -246,30 +246,30 @@ export default function RequestSwapPage() {
 
           <CardContent>
             {!hasValidMatch ? (
-  <div className="text-center space-y-6 py-10">
-    {/* small badge instead of big rectangle */}
-    <Badge variant="destructive" className="px-4 py-2 text-sm">
-      No valid skill match
-    </Badge>
-
-    <p className="text-sm text-slate-600">
-      You don’t have any skills <strong>{targetUser.name}</strong> wants,
-      or they don’t offer any skills you’re looking for.
-    </p>
-
-    {/* show both users’ skills for clarity */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-      <div className="space-y-2">
-        <h4 className="font-medium text-slate-700">Your Skills</h4>
-        <div className="flex flex-wrap gap-2">
-          {currentUser!.skillsOffered.length
-            ? currentUser!.skillsOffered.map((skill) => (
-                <Badge key={skill} variant="outline" className="border-slate-300">
-                  {skill}
+              <div className="text-center space-y-6 py-10">
+                         {/* small badge instead of big rectangle */}
+           <Badge variant="destructive" className="px-4 py-2 text-sm">
+                    No valid skill match
                 </Badge>
-              ))
-            : <span className="italic text-slate-500">None listed</span>}
-        </div>
+
+                    <p className="text-sm text-slate-600">
+           You don’t have any skills <strong>{targetUser.name}</strong> wants,
+             or they don’t offer any skills you’re looking for.
+               </p>
+
+     {/* show both users’ skills for clarity */}
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+         <div className="space-y-2">
+         <h4 className="font-medium text-slate-700">Your Skills</h4>
+         <div className="flex flex-wrap gap-2">
+           {currentUser!.skillsOffered.length
+             ? currentUser!.skillsOffered.map((skill) => (
+                 <Badge key={skill} variant="outline" className="border-slate-300">
+                    {skill}
+                  </Badge>
+                ))
+              : <span className="italic text-slate-500">None listed</span>}
+          </div>
       </div>
 
       <div className="space-y-2">
@@ -345,7 +345,7 @@ export default function RequestSwapPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300" 
+                  className="w-full bg-blue text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all duration-300" 
                   disabled={submitting}
                 >
                   {submitting ? "Sending Request..." : "Send Swap Request"}

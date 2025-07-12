@@ -203,15 +203,20 @@ export default function ProfilePage() {
               </Card>
 
               <Card className="border bg-muted/5">
-                <CardContent className="pt-6 text-center">
-                  <div className="text-2xl font-bold text-foreground">
-                    {user.visibility === "Public" ? "👁️" : "🔒"}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {user.visibility} Profile
-                  </div>
-                </CardContent>
-              </Card>
+  <CardContent className="pt-6 text-center">
+    <div className="flex justify-center">
+      <img
+        src={user.visibility === "Public" ? "/eye-regular.svg" : "/lock-solid.svg"}
+        alt={user.visibility === "Public" ? "Public profile" : "Private profile"}
+        className="h-6 w-6"
+      />
+    </div>
+    <div className="text-sm text-muted-foreground mt-2">
+      {user.visibility} Profile
+    </div>
+  </CardContent>
+</Card>
+
             </div>
 
             {user.feedback && user.feedback.length > 0 && (

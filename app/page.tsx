@@ -159,8 +159,15 @@ export default function HomePage() {
         <div className="relative text-center mb-20 overflow-hidden">
           {/* Background Elements */}
           <div className="absolute inset-0 -z-10">
-            {/* Animated Grid */}
-            <div className="absolute inset-0 hero-grid animate-grid-fade-in opacity-0" />
+            {/* Grid Background Image */}
+            <div className="absolute inset-0 w-full h-full">
+              <img 
+                src="/grid.jpg"
+                alt="Grid background"
+                className="w-full h-full object-cover opacity-20 animate-fade-in"
+                style={{ minHeight: '100%', minWidth: '100%' }}
+              />
+            </div>
             
             {/* Center Glow */}
             <div className="absolute inset-0 hero-glow animate-glow-pulse" />
@@ -176,7 +183,7 @@ export default function HomePage() {
           
           <div className="relative animate-fade-in">
             <div className="relative z-10 max-w-4xl mx-auto px-4">
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-foreground pb-2 mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl  text lg:text-7xl font-bold text-foreground pb-2 mb-6 leading-tight">
                 Professional Skill Exchange Platform
               </h1>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
