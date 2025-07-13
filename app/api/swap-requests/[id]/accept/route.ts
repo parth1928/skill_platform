@@ -25,9 +25,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const db = await connectToDatabase()
     
+    const { id } = await params
     let swapRequestId;
     try {
-      swapRequestId = new ObjectId(params.id);
+      swapRequestId = new ObjectId(id);
     } catch (error) {
       return NextResponse.json({ error: "Invalid request ID format" }, { status: 400 })
     }
