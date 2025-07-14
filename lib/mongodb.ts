@@ -5,7 +5,11 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI
-const options = {}
+const options = {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+}
 
 let client
 let clientPromise: Promise<MongoClient>
@@ -29,7 +33,15 @@ if (process.env.NODE_ENV === "development") {
 }
 
 export async function connectToDatabase() {
-  const client = await clientPromise
-  const db = client.db("skillplatform") // Your database name
-  return db
+  try {
+    const client = await clientPromise
+    const db = client.db("skillplatform")
+    // Test the connection
+    await db.command({ ping: 1 })
+    console.log("Connected successfully to MongoDB Atlas")
+    return db
+  } catch (error) {
+    console.error("Error connecting to MongoDB Atlas:", error)
+    throw error
+  }
 }

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/connect';
-import User from '@/lib/db/models/User';
-import jwt from 'jsonwebtoken';
+import { connectToDatabase } from '@/lib/mongodb';
+import { verifyJwt } from '@/lib/jwt';
+import { ObjectId } from 'mongodb';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const db = await connectToDatabase();
 
     // Get search parameters
     const searchParams = req.nextUrl.searchParams;
@@ -35,22 +35,23 @@ export async function GET(req: NextRequest) {
     let currentUserId = null;
     const token = req.headers.get('authorization')?.replace('Bearer ', '');
     if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      const decoded = await verifyJwt(token);
+      if (decoded) {
         currentUserId = decoded.userId;
         // Exclude current user from results
-        query._id = { $ne: currentUserId };
-      } catch (error) {
-        // Invalid token, continue without user context
+        query._id = { $ne: new ObjectId(currentUserId) };
       }
     }
 
     // Get users
-    const users = await User.find(query)
-      .select('-password')
+    const users = await db.collection('users')
+      .find(query)
+      .project({ password: 0 })
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(100)
+      .toArray();
 
+    console.log('Found users:', users.length);
     return NextResponse.json({ users });
   } catch (error) {
     console.error('Get users error:', error);

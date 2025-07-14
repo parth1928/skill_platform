@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = 'mongodb://localhost:27017/skillplatform';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
@@ -29,19 +29,34 @@ async function dbConnect(): Promise<mongoose.Connection> {
   if (!cached.promise) {
     const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
+      retryWrites: true,
+      w: 'majority',
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      dbName: 'skillplatform'
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => mongoose.connection);
+    try {
+      console.log('Attempting to connect to MongoDB...', { uri: MONGODB_URI!.replace(/:\/\/[^@]*@/, '://*****@') });
+      cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+        console.log('Successfully connected to MongoDB');
+        return mongoose.connection;
+      });
+    } catch (error) {
+      console.error('Error during MongoDB connection setup:', error);
+      throw error;
+    }
   }
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+    return cached.conn;
+  } catch (error) {
+    console.error('Error establishing MongoDB connection:', error);
     cached.promise = null;
-    throw e;
+    throw error;
   }
-
-  return cached.conn;
 }
 
 export default dbConnect;
